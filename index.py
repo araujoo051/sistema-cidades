@@ -45,7 +45,7 @@ class Grafo():
             return
 
         self.conexoes[c1][c2] = distancia
-        self.conexoes[c1][c2] = distancia
+        self.conexoes[c2][c1] = distancia
         print(f"Conexão entre {c1} e {c2} cadastrada com sucesso com distância de {distancia} km.")
 
     def lista_conexoes(self):
@@ -72,7 +72,44 @@ class Grafo():
             print(f"Vizinhos de {c}:")
             for vizinho, distancia in vizinhos.items():
                 print(f"{vizinho} (distância: {distancia} km)")
-    
+
+    def importar_cidades(self, arquivo="grafo.csv"):
+        import csv
+        try:
+            with open(arquivo, mode='r', encoding='utf-8') as arq:
+                leitor = csv.reader(arq)
+
+                for linha in leitor:
+                    if len(linha) != 3:
+                        print(f"Linha inválida no arquivo: {linha}")
+                        continue
+
+                    cidade1, cidade2, distancia = linha
+                    cidade1 = cidade1.strip().lower()
+                    cidade2 = cidade2.strip().lower()
+
+                    try:
+                        distancia = float(distancia.strip())
+                    except ValueError:
+                        print(f"Distância inválida para a conexão {cidade1} - {cidade2}: {distancia}")
+                        continue
+
+                    for nome in [cidade1, cidade2]:
+                        if nome not in self.conexoes:
+                            self.cidades.append(Cidade(nome))
+                            self.conexoes[nome] = {}
+
+                    if cidade2 not in self.conexoes[cidade1]:
+                        self.conexoes[cidade1][cidade2] = distancia
+                        self.conexoes[cidade2][cidade1] = distancia
+                        print(f"Conexão importada: {cidade1} - {cidade2} (distância: {distancia} km)")
+                    else:
+                        print(f"Conexão já existe: {cidade1} - {cidade2}")
+
+                print("Importação concluída.")
+        except FileNotFoundError:
+            print(f"Arquivo {arquivo} não encontrado.")
+                        
     
 class Cidade():
     def __init__(self, nome):
@@ -91,6 +128,7 @@ if __name__ == "__main__":
         print("3. Cadastrar conexão")
         print("4. Listar conexões")
         print("5. Listar vizinhos de uma cidade")
+        print("6. Importar cidades e conexões de um arquivo CSV")
         print("0. Sair")
         
         n = int(input("Escolha uma opção: "))
@@ -106,6 +144,8 @@ if __name__ == "__main__":
             grafo.lista_conexoes()
         elif n == 5:
             grafo.lista_vizinhos()
+        elif n == 6:
+            grafo.importar_cidades()
         elif n == 0:
             print("Saindo do programa.")
             break
